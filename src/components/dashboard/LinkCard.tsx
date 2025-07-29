@@ -3,16 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Edit, Trash2, Globe } from "lucide-react";
 import { format } from "date-fns";
-
-interface Link {
-  id: string;
-  title: string;
-  url: string;
-  description?: string;
-  tags: string[];
-  favicon?: string;
-  createdAt: Date;
-}
+import { Link } from "@/hooks/useLinks";
 
 interface LinkCardProps {
   link: Link;
@@ -99,7 +90,7 @@ export const LinkCard = ({ link, onEdit, onDelete }: LinkCardProps) => {
         </div>
         <div className="flex items-center space-x-2">
           <span className="text-xs text-muted-foreground">
-            {format(link.createdAt, 'MMM d, yyyy')}
+            {format(new Date(link.created_at), 'MMM d, yyyy')}
           </span>
           <Button
             variant="ghost"

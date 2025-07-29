@@ -2,52 +2,16 @@ import { useState, useMemo } from "react";
 import { Header } from "@/components/dashboard/Header";
 import { LinkCard } from "@/components/dashboard/LinkCard";
 import { AddLinkDialog } from "@/components/dashboard/AddLinkDialog";
+import { EditLinkDialog } from "@/components/dashboard/EditLinkDialog";
 import { TagFilter } from "@/components/dashboard/TagFilter";
-import { useToast } from "@/hooks/use-toast";
-
-// Mock data for demonstration
-const mockLinks = [
-  {
-    id: "1",
-    title: "React Documentation",
-    url: "https://react.dev",
-    description: "The official React documentation with guides and API reference",
-    tags: ["development", "react", "documentation"],
-    createdAt: new Date(2024, 0, 15),
-  },
-  {
-    id: "2",
-    title: "Tailwind CSS",
-    url: "https://tailwindcss.com",
-    description: "A utility-first CSS framework for rapid UI development",
-    tags: ["css", "development", "design"],
-    createdAt: new Date(2024, 0, 10),
-  },
-  {
-    id: "3",
-    title: "Design Inspiration",
-    url: "https://dribbble.com",
-    description: "Creative community for design professionals",
-    tags: ["design", "inspiration"],
-    createdAt: new Date(2024, 0, 5),
-  },
-];
-
-interface Link {
-  id: string;
-  title: string;
-  url: string;
-  description?: string;
-  tags: string[];
-  createdAt: Date;
-}
+import { useLinks, Link } from "@/hooks/useLinks";
 
 export const Dashboard = () => {
-  const [links, setLinks] = useState<Link[]>(mockLinks);
+  const { links, loading, addLink, updateLink, deleteLink } = useLinks();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const { toast } = useToast();
+  const [editingLink, setEditingLink] = useState<Link | null>(null);
 
   // Get all unique tags
   const allTags = useMemo(() => {
@@ -73,28 +37,25 @@ export const Dashboard = () => {
   }, [links, searchQuery, selectedTags]);
 
   const handleAddLink = async (newLink: { title: string; url: string; description: string; tags: string[] }) => {
-    const link: Link = {
-      id: Date.now().toString(),
-      ...newLink,
-      createdAt: new Date(),
-    };
-    setLinks([link, ...links]);
+    await addLink({
+      title: newLink.title,
+      url: newLink.url,
+      description: newLink.description || undefined,
+      tags: newLink.tags,
+    });
   };
 
   const handleEditLink = (link: Link) => {
-    // TODO: Implement edit functionality
-    toast({
-      title: "Edit functionality",
-      description: "Edit dialog will be implemented",
-    });
+    setEditingLink(link);
   };
 
-  const handleDeleteLink = (id: string) => {
-    setLinks(links.filter(link => link.id !== id));
-    toast({
-      title: "Link deleted",
-      description: "Link has been removed from your collection",
-    });
+  const handleUpdateLink = async (id: string, updates: Partial<Omit<Link, 'id' | 'created_at'>>) => {
+    await updateLink(id, updates);
+    setEditingLink(null);
+  };
+
+  const handleDeleteLink = async (id: string) => {
+    await deleteLink(id);
   };
 
   const handleTagSelect = (tag: string) => {
@@ -109,13 +70,16 @@ export const Dashboard = () => {
     setSelectedTags([]);
   };
 
-  const handleLogout = () => {
-    // TODO: Implement logout functionality
-    toast({
-      title: "Logout functionality",
-      description: "Logout will be implemented with Supabase",
-    });
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-primary/5 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading links...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-primary/5">
@@ -188,6 +152,13 @@ export const Dashboard = () => {
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
         onAdd={handleAddLink}
+      />
+
+      <EditLinkDialog
+        open={!!editingLink}
+        onOpenChange={(open) => !open && setEditingLink(null)}
+        link={editingLink}
+        onEditLink={handleUpdateLink}
       />
     </div>
   );
