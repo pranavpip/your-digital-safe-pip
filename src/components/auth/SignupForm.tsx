@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SignupFormProps {
   onSwitchToLogin: () => void;
@@ -17,6 +18,7 @@ export const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +34,20 @@ export const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
 
     setIsLoading(true);
 
-    // TODO: Implement Supabase authentication
-    toast({
-      title: "Signup functionality",
-      description: "Supabase auth will be implemented here",
-    });
+    const { error } = await signUp(email, password);
+    
+    if (error) {
+      toast({
+        title: "Signup failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account.",
+      });
+    }
     
     setIsLoading(false);
   };

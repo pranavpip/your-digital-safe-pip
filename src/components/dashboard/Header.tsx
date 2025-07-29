@@ -1,15 +1,29 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Lock, Search, Plus, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface HeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onAddLink: () => void;
-  onLogout: () => void;
 }
 
-export const Header = ({ searchQuery, onSearchChange, onAddLink, onLogout }: HeaderProps) => {
+export const Header = ({ searchQuery, onSearchChange, onAddLink }: HeaderProps) => {
+  const { signOut, user } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
   return (
     <header className="bg-card/80 backdrop-blur-sm border-b border-border/50 px-6 py-4">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -48,7 +62,7 @@ export const Header = ({ searchQuery, onSearchChange, onAddLink, onLogout }: Hea
           <Button
             variant="outline"
             size="icon"
-            onClick={onLogout}
+            onClick={handleSignOut}
             className="hover:bg-destructive hover:text-destructive-foreground"
           >
             <LogOut className="w-4 h-4" />

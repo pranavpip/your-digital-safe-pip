@@ -123,7 +123,6 @@ export const Dashboard = () => {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onAddLink={() => setIsAddDialogOpen(true)}
-        onLogout={handleLogout}
       />
 
       <main className="max-w-6xl mx-auto px-6 py-8">
